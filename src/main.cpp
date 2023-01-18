@@ -22,19 +22,15 @@ int main(void) {
     if (!glfwInit())
         exit(EXIT_FAILURE);
 
-    window = glfwCreateWindow(640, 480, "cobalt", NULL, NULL);
+    glfwWindowHintString(GLFW_X11_CLASS_NAME, "icon");
+
+    window = glfwCreateWindow(640, 480, "icon", NULL, NULL);
     glfwSetWindowTitle(window, "ぷよぷよcobalt");
 
     int width, height, channels;
-    unsigned char* pixels = stbi_load("../sprites/cobale.png", &width, &height, &channels, 4);   
+    unsigned char* pixels = stbi_load("../sprites/cobale_256x256.png", &width, &height, &channels, 0);   
 
-    GLFWimage images[1];
-    images[0].width = width;
-    images[0].height = height;
-    images[0].pixels = pixels;
-    glfwSetWindowIcon(window, 1, images);
-
-    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, "ぷよぷよcobalt");
+    glfwSetWindowIcon(window, 0, NULL);
 
     if (!window) {
         glfwTerminate();
