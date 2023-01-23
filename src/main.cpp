@@ -96,6 +96,8 @@ class Line {
 class Puyo {
     unsigned int shaderProgram;
     unsigned int VBO, VAO, EBO, texture;
+    int x, y;
+    float r, g, b;
     float vertices[32] = {
         //vertex           texture
         1.0f, 1.0f, 0.0f,  1.0f, 0.0f,  0.0f, 0.0f, 0.0f, //top right
@@ -131,7 +133,19 @@ class Puyo {
     "}\0";
 
     public:
-        Puyo(int x, int y, float r, float g, float b) {
+        Puyo(int _x, int _y, float _r, float _g, float _b) {
+            //update global grid positions and color
+            this->x = _x;
+            this->y = _y;
+            this->r = _r;
+            this->g = _g;
+            this->b = _b;
+
+            //draw setup
+            drawInit();            
+        }
+
+        void drawInit() {
             //setting the grid positions
             vertices[0] = -0.3f + 0.1f * x + 0.1f;
             vertices[1] = -0.6f + 0.1f * y + 0.1f;
@@ -144,10 +158,11 @@ class Puyo {
 
             //setting color
             for (int i = 0; i < 4; i++) {
-                vertices[5 + 8 * i] = r;
-                vertices[6 + 8 * i] = g;
-                vertices[7 + 8 * i] = b;
+                vertices[5 + 8 * i] = this->r;
+                vertices[6 + 8 * i] = this->g;
+                vertices[7 + 8 * i] = this->b;
             }
+
             unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
             glCompileShader(vertexShader);
@@ -171,10 +186,10 @@ class Puyo {
             glBindVertexArray(VAO);
 
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
 
             //position
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
@@ -198,20 +213,17 @@ class Puyo {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             
             int width, height, channels;
+            char buffer[PATH_MAX];
 
-            unsigned char* data = stbi_load("../sprites/cobale_256x256.png", &width, &height, &channels, 0);
+            unsigned char* data = stbi_load(realpath("../sprites/cobale_256x256.png", buffer), &width, &height, &channels, 0);
             if (data) {
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
                 glGenerateMipmap(GL_TEXTURE_2D);
             } else {
-                cout << "image not loaded";
+                cout << "image not loaded" << endl;
             }
 
             stbi_image_free(data);
-        }
-
-        Puyo() {
-            
         }
 
         void draw() {
@@ -223,6 +235,12 @@ class Puyo {
             //glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
+        void move(int ax, int by) {
+            this->x += ax;
+            this->y += by;
+            drawInit();
+        }
+
         ~Puyo() {
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
@@ -231,12 +249,16 @@ class Puyo {
         }
 };
 
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+Puyo* currPuyo;
+
 int main(void) {
     GLFWwindow* window;
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
-        exit(EXIT_FAILURE);
+        ::exit(EXIT_FAILURE);
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -248,7 +270,7 @@ int main(void) {
 
     if (!window) {
         glfwTerminate();
-        exit(EXIT_FAILURE);
+        ::exit(EXIT_FAILURE);
     }
 
     glfwMakeContextCurrent(window);
@@ -287,6 +309,10 @@ int main(void) {
         new Puyo(4, 4, 1.0f, 0.0f, 0.0f)
     };
 
+    currPuyo = new Puyo(3, 10, 0.0f, 1.0f, 0.0f);
+
+    glfwSetKeyCallback(window, keyCallback);
+
     while (!glfwWindowShouldClose(window)) {
         //set viewport size
         int width, height;
@@ -305,6 +331,8 @@ int main(void) {
             grid[i]->draw();
         }
 
+        currPuyo->draw();
+
         //check events, swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -312,5 +340,23 @@ int main(void) {
     
     glfwDestroyWindow(window);
     glfwTerminate();
-    exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    if (action != GLFW_PRESS) return;
+    switch (key) {
+        case GLFW_KEY_LEFT:
+            currPuyo->move(-1, 0);
+            cout << "left" << endl;
+            break;
+        case GLFW_KEY_RIGHT:
+            currPuyo->move(1, 0);
+            cout << "right" << endl;
+            break;
+        case GLFW_KEY_DOWN:
+            currPuyo->move(0, -1);
+            cout << "down" << endl;
+            break;
+    }
 }
