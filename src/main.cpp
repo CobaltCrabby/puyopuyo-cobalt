@@ -3,7 +3,6 @@
 #include "../stb/stb.cpp"
 #include <iostream>
 #include <cmath>
-#include <vector>
 
 using namespace std;
 //g++ -c main.cpp && g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor && ./main.exec
@@ -31,8 +30,7 @@ class Line {
     float vertices[6];
 
     public:
-        Line () {}
-
+        Line() {};
         Line (float x1, float y1, float x2, float y2) {
             vertices[0] = x1;
             vertices[1] = y1;
@@ -41,8 +39,6 @@ class Line {
             vertices[4] = y2;
             vertices[5] = 0.0f;
 
-            // build and compile our shader program
-            // ------------------------------------
             // vertex shader
             unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
             glShaderSource(vertexShader, 1, &lvertexShaderSource, NULL);
@@ -71,13 +67,6 @@ class Line {
 
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
             glEnableVertexAttribArray(0);
-
-            // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
-            glBindBuffer(GL_ARRAY_BUFFER, 0); 
-
-            // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-            // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-            glBindVertexArray(0); 
         }
 
         void draw() {
@@ -301,7 +290,7 @@ class Puyo {
 
 class Grid {
     int xSize, ySize;
-    vector<Line*> gridLines;
+    Line* gridLines;
     Puyo** puyoGrid;
     Puyo currPuyo;
 
@@ -311,17 +300,18 @@ class Grid {
             ySize = y;
 
             puyoGrid = new Puyo*[x];
+            gridLines = new Line[x + y + 2];
 
             for (int i = 0; i < x; i++) {
                 puyoGrid[i] = new Puyo[y];
             }
 
             for (int i = 0; i < x + 1; i++) {
-                gridLines.push_back(new Line((-x / 20.0f) + 0.1 * i, (y / 20.0f), (-x / 20.0f) + 0.1f * i, (-y / 20.0f)));
+                gridLines[i] = *(new Line((-x / 20.0f) + 0.1 * i, (y / 20.0f), (-x / 20.0f) + 0.1f * i, (-y / 20.0f)));
             }
 
             for (int i = 0; i < y + 1; i++) {
-                gridLines.push_back(new Line((-x / 20.0f), (-y / 20.0f) + 0.1f * i, (x / 20.0f), (-y / 20.0f) + 0.1f * i));
+                gridLines[x + 1 + i] = *(new Line((-x / 20.0f), (-y / 20.0f) + 0.1f * i, (x / 20.0f), (-y / 20.0f) + 0.1f * i));
             }
         }
 
@@ -334,8 +324,8 @@ class Grid {
                 }
             }
 
-            for (int i = 0; i < gridLines.size(); i++) {
-                gridLines.at(i)->draw();
+            for (int i = 0; i < xSize + ySize + 2; i++) {
+                gridLines[i].draw();
             }
         }
 
@@ -467,9 +457,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             break;
         case GLFW_KEY_DOWN:
             grid->move(0, -1);
-            break;
-        case GLFW_KEY_UP:
-            grid->move(0, 1);
             break;
     }
 }
