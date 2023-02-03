@@ -1,0 +1,21 @@
+==2186== Memcheck, a memory error detector
+==2186== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2186== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
+==2186== Command: ./main.exec
+==2186== Parent PID: 23402
+==2186== 
+==2186== 
+==2186== HEAP SUMMARY:
+==2186==     in use at exit: 224,836 bytes in 3,064 blocks
+==2186==   total heap usage: 69,919 allocs, 66,855 frees, 36,195,777 bytes allocated
+==2186== 
+==2186== LEAK SUMMARY:
+==2186==    definitely lost: 0 bytes in 0 blocks
+==2186==    indirectly lost: 0 bytes in 0 blocks
+==2186==      possibly lost: 304 bytes in 2 blocks
+==2186==    still reachable: 224,532 bytes in 3,062 blocks
+==2186==         suppressed: 0 bytes in 0 blocks
+==2186== Rerun with --leak-check=full to see details of leaked memory
+==2186== 
+==2186== For lists of detected and suppressed errors, rerun with: -s
+==2186== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

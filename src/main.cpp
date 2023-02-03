@@ -3,6 +3,7 @@
 #include "../stb/stb.cpp"
 #include <iostream>
 #include <cmath>
+#include <atomic>
 
 using namespace std;
 //g++ -c main.cpp && g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor && ./main.exec
@@ -25,12 +26,13 @@ const char *lfragmentShaderSource = "#version 430 core\n"
     "}\n\0";
 
 class Line {
-    unsigned int shaderProgram;
+    GLuint shaderProgram;
     unsigned int VBO, VAO;
     float vertices[6];
 
     public:
-        Line() {};
+        Line() { }
+
         Line (float x1, float y1, float x2, float y2) {
             vertices[0] = x1;
             vertices[1] = y1;
@@ -80,30 +82,32 @@ class Line {
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
             glDeleteProgram(shaderProgram);
+            cout << "deleting?????" << endl;
         }
 };
 
+const char* pvertexShaderSource = "#version 430 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec2 aTexCoord;\n"
+"layout (location = 2) in vec3 aColor;\n"
+"out vec2 TexCoord;\n"
+"out vec3 ourColor;\n"
+"void main() {\n"
+    "gl_Position = vec4(aPos, 1.0);\n"
+    "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+    "ourColor = aColor;\n"
+"}\0";
 
-    const char* pvertexShaderSource = "#version 430 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec2 aTexCoord;\n"
-    "layout (location = 2) in vec3 aColor;\n"
-    "out vec2 TexCoord;\n"
-    "out vec3 ourColor;\n"
-    "void main() {\n"
-        "gl_Position = vec4(aPos, 1.0);\n"
-        "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
-        "ourColor = aColor;\n"
-    "}\0";
+const char* pfragmentShaderSource = "#version 430 core\n"
+"out vec4 FragColor;\n"
+"in vec2 TexCoord;\n"
+"in vec3 ourColor;\n"
+"uniform sampler2D texture1;\n"
+"void main() {\n"
+    "FragColor = texture(texture1, TexCoord) * vec4(ourColor, 1.0);\n"
+"}\0";
 
-    const char* pfragmentShaderSource = "#version 430 core\n"
-    "out vec4 FragColor;\n"
-    "in vec2 TexCoord;\n"
-    "in vec3 ourColor;\n"
-    "uniform sampler2D texture1;\n"
-    "void main() {\n"
-        "FragColor = texture(texture1, TexCoord) * vec4(ourColor, 1.0);\n"
-    "}\0";
+enum color{red, green, blue, yellow};
 
 class Puyo {
     GLuint shaderProgram;
@@ -111,7 +115,8 @@ class Puyo {
     int x, y;
     float r, g, b;
     int g_x, g_y;
-    bool isDrawReady = false;
+    bool popChecked = false;
+    enum color color;
 
     float vertices[32] = {
         //vertex           texture
@@ -137,15 +142,31 @@ class Puyo {
             g_y = 0;
         }
 
-        Puyo(int _x, int _y, float _r, float _g, float _b, int gx, int gy) {
+        Puyo(int _x, int _y, enum color _c, int gx, int gy) {
             //update global grid positions and color
             x = _x;
             y = _y;
-            r = _r;
-            g = _g;
-            b = _b;
+            r = 0;
+            g = 0;
+            b = 0;
             g_x = gx;
             g_y = gy;
+            color = _c;
+
+            switch (_c) {
+                case red:
+                    r = 1.0f;
+                    break;
+                case green:
+                    g = 1.0f;
+                    break;
+                case blue:
+                    b = 1.0f;
+                    break;
+                case yellow:
+                    g = 1.0f;
+                    r = 1.0f;
+            }
 
             //draw setup
             drawInit();           
@@ -230,7 +251,6 @@ class Puyo {
             }
 
             stbi_image_free(data);
-            isDrawReady = true;
         }
 
         void draw() {
@@ -266,10 +286,6 @@ class Puyo {
             cout << "r: " << r << " g: " << g << " b: " << b << endl;
         }
 
-        bool getDrawReady() {
-            return isDrawReady;
-        }
-
         int getX() {
             return x;
         }
@@ -278,7 +294,20 @@ class Puyo {
             return y;
         }
 
+        enum color getColor() {
+            return color;
+        }
+
+        bool getPopChecked() {
+            return popChecked;
+        }
+
+        void setPopChecked(bool b) {
+            popChecked = b;
+        }
+
         ~Puyo() {
+            cout << "delete" << endl;
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
             glDeleteBuffers(1, &EBO);
@@ -290,71 +319,110 @@ class Puyo {
 
 class Grid {
     int xSize, ySize;
-    Line* gridLines;
-    Puyo** puyoGrid;
-    Puyo currPuyo;
+    Line** gridLines;
+    Puyo*** puyoGrid;
+    Puyo* currPuyo;
+    atomic<long long> counter{0};
 
     public:
         Grid (int x, int y) {
             xSize = x;
             ySize = y;
 
-            puyoGrid = new Puyo*[x];
-            gridLines = new Line[x + y + 2];
+            puyoGrid = new Puyo**[x];
+            gridLines = new Line*[x + y + 2];
 
             for (int i = 0; i < x; i++) {
-                puyoGrid[i] = new Puyo[y];
+                puyoGrid[i] = new Puyo*[y];
+                for (int j = 0; j < y; j++) {
+                    puyoGrid[i][j] = nullptr;
+                }
             }
 
             for (int i = 0; i < x + 1; i++) {
-                gridLines[i] = *(new Line((-x / 20.0f) + 0.1 * i, (y / 20.0f), (-x / 20.0f) + 0.1f * i, (-y / 20.0f)));
+                gridLines[i] = new Line((-x / 20.0f) + 0.1 * i, (y / 20.0f), (-x / 20.0f) + 0.1f * i, (-y / 20.0f));
             }
 
             for (int i = 0; i < y + 1; i++) {
-                gridLines[x + 1 + i] = *(new Line((-x / 20.0f), (-y / 20.0f) + 0.1f * i, (x / 20.0f), (-y / 20.0f) + 0.1f * i));
+                gridLines[x + 1 + i] = new Line((-x / 20.0f), (-y / 20.0f) + 0.1f * i, (x / 20.0f), (-y / 20.0f) + 0.1f * i);
             }
         }
 
         void draw() {
             for (int i = 0; i < xSize; i++) {
                 for (int j = 0; j < ySize; j++) {
-                    if (puyoGrid[i][j].getDrawReady()) {
-                        puyoGrid[i][j].draw();
+                    if (puyoGrid[i][j] != nullptr) {
+                        puyoGrid[i][j]->draw();
                     }
                 }
             }
 
             for (int i = 0; i < xSize + ySize + 2; i++) {
-                gridLines[i].draw();
+                gridLines[i]->draw();
             }
         }
 
         void setCurrPuyo(Puyo* puyo) {
-            currPuyo = *puyo;
+            currPuyo = puyo;
         }
 
         Puyo* getCurrPuyo() {
-            return &currPuyo;
+            return currPuyo;
         }
 
-        Puyo* addPuyo(int x, int y, float r, float g, float b) {
-            //needs to be dereferenced pointer ????
-            puyoGrid[x][y] = *(new Puyo(x, y, r, g, b, xSize, ySize));
-            return &(puyoGrid[x][y]);
+        Puyo* addPuyo(int x, int y, enum color c) {
+            puyoGrid[x][y] = new Puyo(x, y, c, xSize, ySize);
+            return puyoGrid[x][y];
         }
 
         void move(int xInc, int yInc) {
-            int px = currPuyo.getX();
-            int py = currPuyo.getY();
+            long value = counter.fetch_add(1);
+
+            if (value != 0) {
+                cout << "value not 0" << endl;
+            }
+
+            int px = currPuyo->getX();
+            int py = currPuyo->getY();
             int nx = px + xInc;
             int ny = py + yInc;
 
-            if (nx >= 0 && nx < xSize && ny >= 0 && ny < ySize && !puyoGrid[nx][ny].getDrawReady()) {
-                Puyo temp = puyoGrid[nx][ny];
-                currPuyo.move(xInc, yInc);
+            if (nx >= 0 && nx < xSize && ny >= 0 && ny < ySize && puyoGrid[nx][ny] == nullptr) {
+                Puyo* temp = puyoGrid[nx][ny];
+                currPuyo->move(xInc, yInc);
                 puyoGrid[nx][ny] = currPuyo;
                 puyoGrid[px][py] = temp;
+
+                cout << checkPops(nx, ny, 0, puyoGrid[nx][ny]->getColor()) << endl;
+                for (int i = 0; i < xSize; i++) {
+                    for (int j = 0; j < ySize; j++) {
+                        if (puyoGrid[i][j] != nullptr) {
+                            puyoGrid[i][j]->setPopChecked(false);
+                        }
+                    }
+                }
             }
+
+            value = counter.fetch_sub(1);
+            if (value != 1) {
+                cout << "not equal to 1" << endl;
+            }
+        }
+
+        int checkPops(int x, int y, int num, enum color c) {
+            if (x < 0 || x >= xSize || y < 0 || y >= ySize || puyoGrid[x][y] == nullptr || puyoGrid[x][y]->getPopChecked() || puyoGrid[x][y]->getColor() != c) {
+                return num;
+            }
+
+            num++;
+            puyoGrid[x][y]->setPopChecked(true);
+
+            num = checkPops(x - 1, y, num, c);
+            num = checkPops(x + 1, y, num, c);
+            num = checkPops(x, y - 1, num, c);
+            num = checkPops(x, y + 1, num, c);
+
+            return num;
         }
 };
 
@@ -395,28 +463,28 @@ int main(void) {
 
     grid = new Grid(gridX, gridY);
 
-    //grid x, y, color r, g, b]
-    grid->addPuyo(0, 0, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(0, 1, 0.0f, 1.0f, 0.0f);
-    grid->addPuyo(0, 2, 0.0f, 1.0f, 0.0f);
-    grid->addPuyo(1, 0, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(1, 1, 0.0f, 1.0f, 0.0f);
-    grid->addPuyo(1, 2, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(2, 0, 0.0f, 0.0f, 1.0f);
-    grid->addPuyo(2, 1, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(2, 2, 0.0f, 0.0f, 1.0f);
-    grid->addPuyo(3, 0, 1.0f, 1.0f, 0.0f);
-    grid->addPuyo(3, 1, 0.0f, 0.0f, 1.0f);
-    grid->addPuyo(3, 2, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(4, 0, 1.0f, 1.0f, 0.0f);
-    grid->addPuyo(4, 1, 0.0f, 0.0f, 1.0f);
-    grid->addPuyo(4, 2, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(5, 0, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(5, 1, 1.0f, 0.0f, 0.0f);
-    grid->addPuyo(5, 2, 1.0f, 1.0f, 0.0f);
-    grid->addPuyo(5, 3, 1.0f, 1.0f, 0.0f);    
+    //grid x, y, color]
+    grid->addPuyo(0, 0, red);
+    grid->addPuyo(0, 1, green);
+    grid->addPuyo(0, 2, green);
+    grid->addPuyo(1, 0, red);
+    grid->addPuyo(1, 1, green);
+    grid->addPuyo(1, 2, red);
+    grid->addPuyo(2, 0, blue);
+    grid->addPuyo(2, 1, red);
+    grid->addPuyo(2, 2, blue);
+    grid->addPuyo(3, 0, yellow);
+    grid->addPuyo(3, 1, blue);
+    grid->addPuyo(3, 2, red);
+    grid->addPuyo(4, 0, yellow);
+    grid->addPuyo(4, 1, blue);
+    grid->addPuyo(4, 2, red);
+    grid->addPuyo(5, 0, red);
+    grid->addPuyo(5, 1, red);
+    grid->addPuyo(5, 2, yellow);
+    grid->addPuyo(5, 3, yellow);    
 
-    grid->setCurrPuyo(grid->addPuyo(3, 10, 0.0f, 1.0f, 0.0f));
+    grid->setCurrPuyo(grid->addPuyo(3, 10, green));
     glfwSetKeyCallback(window, keyCallback);
 
     // During init, enable debug output
