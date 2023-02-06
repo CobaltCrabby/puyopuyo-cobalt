@@ -1,5 +1,7 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "../stb/stb.cpp"
 #include <iostream>
 #include <cmath>
@@ -164,8 +166,9 @@ class Puyo {
                     b = 1.0f;
                     break;
                 case yellow:
-                    g = 1.0f;
+                    g = 1.0f; 
                     r = 1.0f;
+                    break;
             }
 
             //draw setup
@@ -375,13 +378,7 @@ class Grid {
             return puyoGrid[x][y];
         }
 
-        void move(int xInc, int yInc) {
-            long value = counter.fetch_add(1);
-
-            if (value != 0) {
-                cout << "value not 0" << endl;
-            }
-
+        bool move(int xInc, int yInc) {
             int px = currPuyo->getX();
             int py = currPuyo->getY();
             int nx = px + xInc;
@@ -393,19 +390,26 @@ class Grid {
                 puyoGrid[nx][ny] = currPuyo;
                 puyoGrid[px][py] = temp;
 
-                cout << checkPops(nx, ny, 0, puyoGrid[nx][ny]->getColor()) << endl;
-                for (int i = 0; i < xSize; i++) {
-                    for (int j = 0; j < ySize; j++) {
-                        if (puyoGrid[i][j] != nullptr) {
-                            puyoGrid[i][j]->setPopChecked(false);
-                        }
+                popPuyo(nx, ny);
+            } else {
+                return false;
+            }
+            return true;
+        }
+
+        void popPuyo(int _x, int _y) {
+            int size = checkPops(_x, _y, 0, puyoGrid[_x][_y]->getColor());
+
+            for (int i = 0; i < xSize; i++) {
+                for (int j = 0; j < ySize; j++) {
+                    if (puyoGrid[i][j] != nullptr) {
+                        puyoGrid[i][j]->setPopChecked(false);
                     }
                 }
             }
 
-            value = counter.fetch_sub(1);
-            if (value != 1) {
-                cout << "not equal to 1" << endl;
+            if (size >= 4) {
+                cout << "pop" << endl;
             }
         }
 
@@ -426,7 +430,7 @@ class Grid {
         }
 };
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void keyCallback(GLFWwindow* window);
 
 void GLAPIENTRY MessageCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam ) {
   fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
@@ -437,6 +441,7 @@ void GLAPIENTRY MessageCallback( GLenum source, GLenum type, GLuint id, GLenum s
 int gridX = 6; 
 int gridY = 12;
 Grid* grid;
+int frameCount;
 
 int main(void) {
     GLFWwindow* window;
@@ -459,6 +464,7 @@ int main(void) {
     }
 
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
     double theta = 0;
 
     grid = new Grid(gridX, gridY);
@@ -485,13 +491,21 @@ int main(void) {
     grid->addPuyo(5, 3, yellow);    
 
     grid->setCurrPuyo(grid->addPuyo(3, 10, green));
-    glfwSetKeyCallback(window, keyCallback);
 
     // During init, enable debug output
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
 
+    double lastTime = glfwGetTime();
+    frameCount = 0;
+
     while (!glfwWindowShouldClose(window)) {
+        //fps counter
+        double currentTime = glfwGetTime();
+        frameCount++;
+            
+        //printf("%f fps\n", double(frameCount / (currentTime - lastTime)));
+
         //set viewport size
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -507,6 +521,7 @@ int main(void) {
         //check events, swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
+        keyCallback(window);
     }
     
     glfwDestroyWindow(window);
@@ -514,17 +529,78 @@ int main(void) {
     ::exit(EXIT_SUCCESS);
 }
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (action != GLFW_PRESS) return;
-    switch (key) {
-        case GLFW_KEY_LEFT:
-            grid->move(-1, 0);
-            break;
-        case GLFW_KEY_RIGHT:
-            grid->move(1, 0);
-            break;
-        case GLFW_KEY_DOWN:
-            grid->move(0, -1);
-            break;
+int dasFrame = 0;
+bool dasActive = false;
+bool dasCharge = false;
+int prevLeft;
+int prevRight;
+int prevDown;
+
+void horizontalInput(int input, int prev, int x) {
+    bool moved = true;
+    if (input) {
+        if (!prev) {
+            moved = grid->move(x, 0);
+            dasActive = false;
+            dasCharge = true;
+        } else {
+            if (dasFrame == 11) {
+                dasActive = true;
+                dasCharge = false;
+                dasFrame = 0;
+            }
+
+            if (dasActive && dasFrame == 2) {
+                moved = grid->move(x, 0);
+                dasFrame = 0;
+            }
+        }
+    } else if (prev) {
+        dasFrame = 0;
+        dasActive = false;
+        dasCharge = false;
     }
+
+    if (!moved) {
+        dasFrame = 0;
+        dasActive = false;
+    }
+}
+
+void keyCallback(GLFWwindow* window) {
+    int left = glfwGetKey(window, GLFW_KEY_LEFT);
+    int right = glfwGetKey(window, GLFW_KEY_RIGHT);
+    int down = glfwGetKey(window, GLFW_KEY_DOWN);
+
+    // if (glfwGetKey(window, GLFW_KEY_UP)) {
+    //     grid->move(0, 1);
+    // }
+
+    if (down && !dasCharge) {
+        if (!prevDown && !(left || right)) {
+           grid->move(0, -1);
+        } else {
+            //both no
+            //das n
+            //left yes
+            //none yes
+            if (dasFrame == 2 && !dasCharge) {
+                grid->move(0, -1);
+                dasFrame = 0;
+            }
+        }
+    } else if (prevDown && !dasCharge && !(left || right)) {
+        dasFrame = 0;
+    }
+
+    if (left && prevLeft || right && prevRight || down && prevDown) {
+        dasFrame++;
+    }
+
+    horizontalInput(left, prevLeft, -1);
+    horizontalInput(right, prevRight, 1);
+
+    prevLeft = left;
+    prevRight = right;
+    prevDown = down;
 }
