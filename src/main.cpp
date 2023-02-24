@@ -1,15 +1,17 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
+
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#include "../stb/stb.cpp"
+#include "../stb/stb_image.h"
+
 #include <iostream>
 #include <cmath>
-#include <atomic>
+#include <vector>
+#include <tuple>
 
 using namespace std;
 //g++ -c main.cpp && g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor && ./main.exec
-
+//g++ -c -g main.cpp && g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor && valgrind --track-origins=yes --log-file=cobalt.rpt ./main.exec
 static void error_callback(int error, const char* description) {
     fputs(description, stderr);
 }
@@ -84,16 +86,15 @@ class Line {
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
             glDeleteProgram(shaderProgram);
-            cout << "deleting?????" << endl;
         }
 };
 
 const char* pvertexShaderSource = "#version 430 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "layout (location = 1) in vec2 aTexCoord;\n"
-"layout (location = 2) in vec3 aColor;\n"
+"layout (location = 2) in vec4 aColor;\n"
 "out vec2 TexCoord;\n"
-"out vec3 ourColor;\n"
+"out vec4 ourColor;\n"
 "void main() {\n"
     "gl_Position = vec4(aPos, 1.0);\n"
     "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
@@ -103,10 +104,10 @@ const char* pvertexShaderSource = "#version 430 core\n"
 const char* pfragmentShaderSource = "#version 430 core\n"
 "out vec4 FragColor;\n"
 "in vec2 TexCoord;\n"
-"in vec3 ourColor;\n"
+"in vec4 ourColor;\n"
 "uniform sampler2D texture1;\n"
 "void main() {\n"
-    "FragColor = texture(texture1, TexCoord) * vec4(ourColor, 1.0);\n"
+    "FragColor = texture(texture1, TexCoord) * ourColor;\n"
 "}\0";
 
 enum color{red, green, blue, yellow};
@@ -120,17 +121,17 @@ class Puyo {
     bool popChecked = false;
     enum color color;
 
-    float vertices[32] = {
+    float vertices[36] = {
         //vertex           texture
-        1.0f, 1.0f, 0.0f,  1.0f, 0.0f,  0.0f, 0.0f, 0.0f, //top right
-        1.0f, -1.0f, 0.0f,  1.0f, 1.0f,  0.0f, 0.0f, 0.0f, //bottom right
-        -1.0f, -1.0f, 0.0f,  0.0f, 1.0f,  0.0f, 0.0f, 0.0f, //bottom left
-        -1.0f, 1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 0.0f, 0.0f //top left
+        1.0f, 1.0f, 0.0f,  1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f, //top right
+        1.0f, -1.0f, 0.0f,  1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 1.0f, //bottom right
+        -1.0f, -1.0f, 0.0f,  0.0f, 1.0f,  0.0f, 0.0f, 0.0f, 1.0f, //bottom left
+        -1.0f, 1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f //top left
     };
 
     unsigned int indices[6] {
-        0, 1, 3,
-        1, 2, 3
+        0, 1, 2,
+        0, 2, 3
     };
 
     public:
@@ -179,18 +180,18 @@ class Puyo {
             //setting the grid positions
             vertices[0] = (-g_x / 20.0f) + 0.1f * x + 0.1f;
             vertices[1] = (-g_y / 20.0f) + 0.1f * y + 0.1f;
-            vertices[8] = vertices[0];
-            vertices[9] = vertices[1] - 0.1f;
-            vertices[16] = vertices[0] - 0.1f;
-            vertices[17] = vertices[9];
-            vertices[24] = vertices[16];
-            vertices[25] = vertices[1];
+            vertices[9] = vertices[0];
+            vertices[10] = vertices[1] - 0.1f;
+            vertices[18] = vertices[0] - 0.1f;
+            vertices[19] = vertices[10];
+            vertices[27] = vertices[18];
+            vertices[28] = vertices[1];
 
             //setting color
             for (int i = 0; i < 4; i++) {
-                vertices[5 + 8 * i] = r;
-                vertices[6 + 8 * i] = g;
-                vertices[7 + 8 * i] = b;
+                vertices[5 + 9 * i] = r;
+                vertices[6 + 9 * i] = g;
+                vertices[7 + 9 * i] = b;
             }
 
             unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -222,15 +223,15 @@ class Puyo {
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
 
             //position
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) 0);
             glEnableVertexAttribArray(0);
 
             //texture
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (sizeof(float) * 3));
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (sizeof(float) * 3));
             glEnableVertexAttribArray(1);
 
             //color
-            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (sizeof(float) * 5));
+            glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*) (sizeof(float) * 5));
             glEnableVertexAttribArray(2);
 
             glGenTextures(1, &texture);
@@ -270,12 +271,12 @@ class Puyo {
             //setting the grid positions
             vertices[0] = (-g_x / 20.0f) + 0.1f * x + 0.1f;
             vertices[1] = (-g_y / 20.0f) + 0.1f * y + 0.1f;
-            vertices[8] = vertices[0];
-            vertices[9] = vertices[1] - 0.1f;
-            vertices[16] = vertices[0] - 0.1f;
-            vertices[17] = vertices[9];
-            vertices[24] = vertices[16];
-            vertices[25] = vertices[1];
+            vertices[9] = vertices[0];
+            vertices[10] = vertices[1] - 0.1f;
+            vertices[18] = vertices[0] - 0.1f;
+            vertices[19] = vertices[10];
+            vertices[27] = vertices[18];
+            vertices[28] = vertices[1];
 
             //drawInit();
             glBindVertexArray(VAO);
@@ -309,14 +310,24 @@ class Puyo {
             popChecked = b;
         }
 
+        void setTransparency(float a) {
+            vertices[8] = a;
+            vertices[17] = a;
+            vertices[26] = a;
+            vertices[35] = a;
+
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
+        }
+
         ~Puyo() {
-            cout << "delete" << endl;
             glDeleteVertexArrays(1, &VAO);
             glDeleteBuffers(1, &VBO);
             glDeleteBuffers(1, &EBO);
-            if (glIsProgram(shaderProgram)) {
-                glDeleteProgram(shaderProgram);
-            }
+            glDeleteProgram(shaderProgram);
         }
 };
 
@@ -325,7 +336,8 @@ class Grid {
     Line** gridLines;
     Puyo*** puyoGrid;
     Puyo* currPuyo;
-    atomic<long long> counter{0};
+    int bouncingNum = -1;
+    vector<tuple<int, int>> matched;
 
     public:
         Grid (int x, int y) {
@@ -398,7 +410,8 @@ class Grid {
         }
 
         void popPuyo(int _x, int _y) {
-            int size = checkPops(_x, _y, 0, puyoGrid[_x][_y]->getColor());
+            vector<tuple<int, int>> match; 
+            match = checkPops(_x, _y, matched, puyoGrid[_x][_y]->getColor());
 
             for (int i = 0; i < xSize; i++) {
                 for (int j = 0; j < ySize; j++) {
@@ -408,17 +421,18 @@ class Grid {
                 }
             }
 
-            if (size >= 4) {
-                cout << "pop" << endl;
+            if (match.size() >= 4) {
+                startBouncingTimer();
+                matched = match;
             }
         }
 
-        int checkPops(int x, int y, int num, enum color c) {
+        vector<tuple<int, int>> checkPops(int x, int y, vector<tuple<int, int>> num, enum color c) {
             if (x < 0 || x >= xSize || y < 0 || y >= ySize || puyoGrid[x][y] == nullptr || puyoGrid[x][y]->getPopChecked() || puyoGrid[x][y]->getColor() != c) {
                 return num;
             }
 
-            num++;
+            num.push_back(make_tuple(x, y));
             puyoGrid[x][y]->setPopChecked(true);
 
             num = checkPops(x - 1, y, num, c);
@@ -428,11 +442,86 @@ class Grid {
 
             return num;
         }
+
+        void deletePuyo(int _x, int _y) {
+            Puyo* temp = puyoGrid[_x][_y];
+            puyoGrid[_x][_y] = nullptr;
+            delete temp;
+            currPuyo = nullptr;
+        }
+
+        void bouncingTimer() {
+            if (bouncingNum == -1) return;
+            if (bouncingNum == 64) {
+                for (int i = 0; i < matched.size(); i++) {
+                    tuple<int, int> coords = matched.at(i);
+                    deletePuyo(get<0>(coords), get<1>(coords));
+                }
+                bouncingNum = -1;
+                matched.clear();
+                applyGravity();
+                return;
+            } 
+
+            if (bouncingNum % 8 == 0) {
+                for (int i = 0; i < matched.size(); i++) {
+                    tuple<int, int> coords = matched.at(i);
+                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(1.0f);
+                }
+            } else if (bouncingNum % 8 == 2) {
+                for (int i = 0; i < matched.size(); i++) {
+                    tuple<int, int> coords = matched.at(i);
+                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(0.5f);
+                }
+            } else if (bouncingNum % 8 == 4) {
+                for (int i = 0; i < matched.size(); i++) {
+                    tuple<int, int> coords = matched.at(i);
+                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(0.0f);
+                }
+            } else if (bouncingNum % 8 == 6) {
+                for (int i = 0; i < matched.size(); i++) {
+                    tuple<int, int> coords = matched.at(i);
+                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(0.5f);
+                }
+            }
+            bouncingNum++;
+        }
+
+        void startBouncingTimer() {
+            bouncingNum = 0;
+        }
+
+        bool timerRunning() {
+            return bouncingNum == -1;
+        }
+
+        void applyGravity() {
+            int x = -1;
+            int y = -1;
+
+            for (int i = 0; i < xSize; i++) {
+                for (int j = 1; j < ySize; j++) {
+                    int tempY = j;
+                    while (tempY > 0 && puyoGrid[i][tempY] != nullptr && puyoGrid[i][tempY - 1] == nullptr) {
+                        puyoGrid[i][tempY]->move(0, -1);
+                        puyoGrid[i][tempY - 1] = puyoGrid[i][tempY];
+                        puyoGrid[i][tempY] = nullptr;
+                        x = i;
+                        y = tempY - 1;
+                        tempY--;
+                    }
+                }
+            }
+
+            if (x > 0 && y > 0) {
+                popPuyo(x, y);
+            }
+        }
 };
 
 void keyCallback(GLFWwindow* window);
 
-void GLAPIENTRY MessageCallback( GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam ) {
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam ) {
   fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
             type, severity, message );
@@ -496,6 +585,9 @@ int main(void) {
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     double lastTime = glfwGetTime();
     frameCount = 0;
 
@@ -517,6 +609,9 @@ int main(void) {
 
         //draw...
         grid->draw();
+
+        //timers...
+        grid->bouncingTimer();
 
         //check events, swap buffers
         glfwSwapBuffers(window);
@@ -568,6 +663,8 @@ void horizontalInput(int input, int prev, int x) {
 }
 
 void keyCallback(GLFWwindow* window) {
+    if (grid->getCurrPuyo() == nullptr) return;
+
     int left = glfwGetKey(window, GLFW_KEY_LEFT);
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
     int down = glfwGetKey(window, GLFW_KEY_DOWN);
