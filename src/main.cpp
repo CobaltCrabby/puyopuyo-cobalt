@@ -156,6 +156,7 @@ class Puyo {
             g_y = gy;
             color = _c;
 
+            //yandev fix true
             switch (_c) {
                 case red:
                     r = 1.0f;
@@ -331,12 +332,32 @@ class Puyo {
         }
 };
 
+const int dropSpeedLUT[12] {
+    10,
+    15,
+    19,
+    21,
+    24,
+    26,
+    28,
+    30,
+    32, //temp
+    34,
+    36,
+    38
+};
+
 class Grid {
     int xSize, ySize;
     Line** gridLines;
     Puyo*** puyoGrid;
     Puyo* currPuyo;
+
     int bouncingNum = -1;
+    int dropNum = -1;
+    int dropIndex = 0;
+
+    tuple<int, int> prevDrop = make_tuple(-1, -1);
     vector<tuple<int, int>> matched;
 
     public:
@@ -459,7 +480,7 @@ class Grid {
                 }
                 bouncingNum = -1;
                 matched.clear();
-                applyGravity();
+                startDropTimer();
                 return;
             } 
 
@@ -487,35 +508,54 @@ class Grid {
             bouncingNum++;
         }
 
+        void dropTimer() {
+            if (dropNum == -1) return;
+            bool didGrav;
+
+            if (dropNum == dropSpeedLUT[dropIndex]) {
+                tuple<int, int> pop = applyGravity();
+                if (get<0>(pop) != -1) {
+                    dropIndex++;
+                    prevDrop = pop;
+                } else if (get<0>(prevDrop) != -1) {
+                    dropNum = -1;
+                    dropIndex = 0;
+                    popPuyo(get<0>(prevDrop), get<1>(prevDrop));
+                    prevDrop = make_tuple(-1, -1);
+                }
+            }
+            dropNum++;
+        }
+
         void startBouncingTimer() {
             bouncingNum = 0;
         }
 
-        bool timerRunning() {
-            return bouncingNum == -1;
+        void startDropTimer() {
+            dropNum = 0;
         }
 
-        void applyGravity() {
+        bool timerRunning() {
+            return bouncingNum == -1 || dropNum == -1;
+        }
+
+        tuple<int, int> applyGravity() {
             int x = -1;
             int y = -1;
 
             for (int i = 0; i < xSize; i++) {
                 for (int j = 1; j < ySize; j++) {
-                    int tempY = j;
-                    while (tempY > 0 && puyoGrid[i][tempY] != nullptr && puyoGrid[i][tempY - 1] == nullptr) {
-                        puyoGrid[i][tempY]->move(0, -1);
-                        puyoGrid[i][tempY - 1] = puyoGrid[i][tempY];
-                        puyoGrid[i][tempY] = nullptr;
+                    if (puyoGrid[i][j] != nullptr && puyoGrid[i][j - 1] == nullptr) {
+                        puyoGrid[i][j]->move(0, -1);
+                        puyoGrid[i][j - 1] = puyoGrid[i][j];
+                        puyoGrid[i][j] = nullptr;
                         x = i;
-                        y = tempY - 1;
-                        tempY--;
+                        y = j - 1;
                     }
                 }
             }
 
-            if (x > 0 && y > 0) {
-                popPuyo(x, y);
-            }
+            return make_tuple(x, y);
         }
 };
 
@@ -558,7 +598,8 @@ int main(void) {
 
     grid = new Grid(gridX, gridY);
 
-    //grid x, y, color]
+    //grid x, y, color
+    //this is gtr
     grid->addPuyo(0, 0, red);
     grid->addPuyo(0, 1, green);
     grid->addPuyo(0, 2, green);
@@ -612,6 +653,7 @@ int main(void) {
 
         //timers...
         grid->bouncingTimer();
+        grid->dropTimer();
 
         //check events, swap buffers
         glfwSwapBuffers(window);
