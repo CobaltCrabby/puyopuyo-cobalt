@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 #include <tuple>
+#include <cmath>
 
 using namespace std;
 //g++ -c main.cpp && g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi -ldl -lXinerama -lXcursor && ./main.exec
@@ -156,7 +157,6 @@ class Puyo {
             g_y = gy;
             color = _c;
 
-            //yandev fix true
             switch (_c) {
                 case red:
                     r = 1.0f;
@@ -352,11 +352,13 @@ class Grid {
     int xSize, ySize;
     Line** gridLines;
     Puyo*** puyoGrid;
-    Puyo* currPuyo;
+    Puyo* currPuyo[2];
 
     int bouncingNum = -1;
     int dropNum = -1;
     int dropIndex = 0;
+    
+    int currPuyoRotation = 1;
 
     tuple<int, int> prevDrop = make_tuple(-1, -1);
     vector<tuple<int, int>> matched;
@@ -399,12 +401,13 @@ class Grid {
             }
         }
 
-        void setCurrPuyo(Puyo* puyo) {
-            currPuyo = puyo;
+        void setCurrPuyo(Puyo* puyo1, Puyo* puyo2) {
+            currPuyo[0] = puyo1;
+            currPuyo[1] = puyo2;
         }
 
-        Puyo* getCurrPuyo() {
-            return currPuyo;
+        Puyo* getCurrPuyo(int i) {
+            return currPuyo[i];
         }
 
         Puyo* addPuyo(int x, int y, enum color c) {
@@ -413,21 +416,37 @@ class Grid {
         }
 
         bool move(int xInc, int yInc) {
-            int px = currPuyo->getX();
-            int py = currPuyo->getY();
-            int nx = px + xInc;
-            int ny = py + yInc;
+            int px[2];
+            int py[2];
+            int nx[2];
+            int ny[2];
 
-            if (nx >= 0 && nx < xSize && ny >= 0 && ny < ySize && puyoGrid[nx][ny] == nullptr) {
-                Puyo* temp = puyoGrid[nx][ny];
-                currPuyo->move(xInc, yInc);
-                puyoGrid[nx][ny] = currPuyo;
-                puyoGrid[px][py] = temp;
-
-                popPuyo(nx, ny);
-            } else {
-                return false;
+            for (int i = 0; i < 2; i++) {
+                px[i] = currPuyo[i]->getX();
+                py[i] = currPuyo[i]->getY();
+                nx[i] = px[i] + xInc;
+                ny[i] = py[i] + yInc;
             }
+
+            for (int i = 0; i < 2; i++) {
+                if (nx[i] < 0 || nx[i] >= xSize || ny[i] < 0 || ny[i] >= ySize || 
+                   (puyoGrid[nx[i]][ny[i]] != currPuyo[(i + 1) % 2] && puyoGrid[nx[i]][ny[i]] != nullptr)) {
+                    return false;
+                }
+            }
+
+            for (int i = 0; i < 2; i++) {
+                currPuyo[i]->move(xInc, yInc);
+                puyoGrid[px[i]][py[i]] = nullptr;
+            }
+
+            //need to be seperated so when replacing with nullptr it doesnt delete a currPuyo
+            for (int i = 0; i < 2; i++) {
+                puyoGrid[nx[i]][ny[i]] = currPuyo[i];
+            }
+
+            popPuyo(nx[0], ny[0]);
+
             return true;
         }
 
@@ -444,6 +463,8 @@ class Grid {
             }
 
             if (match.size() >= 4) {
+                //currPuyo[0] = nullptr;
+                //currPuyo[1] = nullptr;
                 startBouncingTimer();
                 matched = match;
             }
@@ -469,7 +490,8 @@ class Grid {
             Puyo* temp = puyoGrid[_x][_y];
             puyoGrid[_x][_y] = nullptr;
             delete temp;
-            currPuyo = nullptr;
+            currPuyo[0] = nullptr;
+            currPuyo[1] = nullptr;
         }
 
         void bouncingTimer() {
@@ -537,7 +559,7 @@ class Grid {
         }
 
         bool timerRunning() {
-            return bouncingNum == -1 || dropNum == -1;
+            return bouncingNum != -1 || dropNum != -1;
         }
 
         tuple<int, int> applyGravity() {
@@ -557,6 +579,26 @@ class Grid {
             }
 
             return make_tuple(x, y);
+        }
+
+        void rotatePuyo(int direction) {
+            if (timerRunning()) return;
+
+            float x_ = cos((currPuyoRotation + direction) * M_PI / 2) - cos((currPuyoRotation) * M_PI / 2);
+            float y_ = sin((currPuyoRotation + direction) * M_PI / 2) - sin((currPuyoRotation) * M_PI / 2);
+            int x = currPuyo[1]->getX();
+            int y = currPuyo[1]->getY();
+            int tx = x_ + x;
+            int ty = y_ + y;
+
+            if (tx < 0 || tx >= xSize || ty < 0 || ty >= ySize || puyoGrid[tx][ty] != nullptr) {
+                return;
+            }
+
+            currPuyo[1]->move(x_, y_);
+            puyoGrid[x][y] = nullptr;
+            puyoGrid[tx][ty] = currPuyo[1];
+            currPuyoRotation += direction;
         }
 };
 
@@ -621,7 +663,7 @@ int main(void) {
     grid->addPuyo(5, 2, yellow);
     grid->addPuyo(5, 3, yellow);    
 
-    grid->setCurrPuyo(grid->addPuyo(3, 10, green));
+    grid->setCurrPuyo(grid->addPuyo(2, 10, green), grid->addPuyo(2, 11, red));
 
     // During init, enable debug output
     glEnable(GL_DEBUG_OUTPUT);
@@ -673,6 +715,8 @@ bool dasCharge = false;
 int prevLeft;
 int prevRight;
 int prevDown;
+int prevA;
+int prevS;
 
 void horizontalInput(int input, int prev, int x) {
     bool moved = true;
@@ -706,11 +750,22 @@ void horizontalInput(int input, int prev, int x) {
 }
 
 void keyCallback(GLFWwindow* window) {
-    if (grid->getCurrPuyo() == nullptr) return;
+    if (grid->getCurrPuyo(0) == nullptr && grid->getCurrPuyo(1) == nullptr) return;
 
     int left = glfwGetKey(window, GLFW_KEY_LEFT);
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
     int down = glfwGetKey(window, GLFW_KEY_DOWN);
+
+    int a = glfwGetKey(window, GLFW_KEY_A);
+    int s = glfwGetKey(window, GLFW_KEY_S);
+
+    if (a && !prevA) {
+        grid->rotatePuyo(1);
+    }
+
+    if (s && !prevS) {
+        grid->rotatePuyo(-1);
+    }
 
     // if (glfwGetKey(window, GLFW_KEY_UP)) {
     //     grid->move(0, 1);
@@ -720,10 +775,6 @@ void keyCallback(GLFWwindow* window) {
         if (!prevDown && !(left || right)) {
            grid->move(0, -1);
         } else {
-            //both no
-            //das n
-            //left yes
-            //none yes
             if (dasFrame == 2 && !dasCharge) {
                 grid->move(0, -1);
                 dasFrame = 0;
@@ -743,4 +794,6 @@ void keyCallback(GLFWwindow* window) {
     prevLeft = left;
     prevRight = right;
     prevDown = down;
+    prevA = a;
+    prevS = s;
 }

@@ -1,83 +1,83 @@
-==24664== Memcheck, a memory error detector
-==24664== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==24664== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
-==24664== Command: ./main.exec
-==24664== Parent PID: 21991
-==24664== 
-==24664== Invalid read of size 8
-==24664==    at 0x401D704: strncmp (strcmp.S:175)
-==24664==    by 0x400604D: is_dst (dl-load.c:209)
-==24664==    by 0x4008566: _dl_dst_count (dl-load.c:246)
-==24664==    by 0x4008757: expand_dynamic_string_token (dl-load.c:388)
-==24664==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
-==24664==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:673)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:654)
-==24664==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==24664==    by 0x400DDC0: openaux (dl-deps.c:64)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==24664==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
-==24664==    at 0x483877F: malloc (vg_replace_malloc.c:307)
-==24664==    by 0x401C26A: strdup (strdup.c:42)
-==24664==    by 0x4008B74: decompose_rpath (dl-load.c:606)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:673)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:654)
-==24664==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==24664==    by 0x400DDC0: openaux (dl-deps.c:64)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==24664==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x40138F9: _dl_open (dl-open.c:837)
-==24664==    by 0x4A46257: dlopen_doit (dlopen.c:66)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664== 
-==24664== Invalid read of size 8
-==24664==    at 0x401D704: strncmp (strcmp.S:175)
-==24664==    by 0x400604D: is_dst (dl-load.c:209)
-==24664==    by 0x400861E: _dl_dst_substitute (dl-load.c:288)
-==24664==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
-==24664==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:673)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:654)
-==24664==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==24664==    by 0x400DDC0: openaux (dl-deps.c:64)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==24664==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x40138F9: _dl_open (dl-open.c:837)
-==24664==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
-==24664==    at 0x483877F: malloc (vg_replace_malloc.c:307)
-==24664==    by 0x401C26A: strdup (strdup.c:42)
-==24664==    by 0x4008B74: decompose_rpath (dl-load.c:606)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:673)
-==24664==    by 0x4009745: cache_rpath (dl-load.c:654)
-==24664==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==24664==    by 0x400DDC0: openaux (dl-deps.c:64)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==24664==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664==    by 0x40138F9: _dl_open (dl-open.c:837)
-==24664==    by 0x4A46257: dlopen_doit (dlopen.c:66)
-==24664==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==24664== 
-==24664== 
-==24664== HEAP SUMMARY:
-==24664==     in use at exit: 220,748 bytes in 3,045 blocks
-==24664==   total heap usage: 76,582 allocs, 73,537 frees, 36,373,201 bytes allocated
-==24664== 
-==24664== LEAK SUMMARY:
-==24664==    definitely lost: 0 bytes in 0 blocks
-==24664==    indirectly lost: 0 bytes in 0 blocks
-==24664==      possibly lost: 304 bytes in 2 blocks
-==24664==    still reachable: 220,444 bytes in 3,043 blocks
-==24664==         suppressed: 0 bytes in 0 blocks
-==24664== Rerun with --leak-check=full to see details of leaked memory
-==24664== 
-==24664== For lists of detected and suppressed errors, rerun with: -s
-==24664== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
+==11091== Memcheck, a memory error detector
+==11091== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==11091== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
+==11091== Command: ./main.exec
+==11091== Parent PID: 5777
+==11091== 
+==11091== Invalid read of size 8
+==11091==    at 0x401D704: strncmp (strcmp.S:175)
+==11091==    by 0x400604D: is_dst (dl-load.c:209)
+==11091==    by 0x4008566: _dl_dst_count (dl-load.c:246)
+==11091==    by 0x4008757: expand_dynamic_string_token (dl-load.c:388)
+==11091==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
+==11091==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:673)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:654)
+==11091==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==11091==    by 0x400DDC0: openaux (dl-deps.c:64)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==11091==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
+==11091==    at 0x483877F: malloc (vg_replace_malloc.c:307)
+==11091==    by 0x401C26A: strdup (strdup.c:42)
+==11091==    by 0x4008B74: decompose_rpath (dl-load.c:606)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:673)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:654)
+==11091==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==11091==    by 0x400DDC0: openaux (dl-deps.c:64)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==11091==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x40138F9: _dl_open (dl-open.c:837)
+==11091==    by 0x4A46257: dlopen_doit (dlopen.c:66)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091== 
+==11091== Invalid read of size 8
+==11091==    at 0x401D704: strncmp (strcmp.S:175)
+==11091==    by 0x400604D: is_dst (dl-load.c:209)
+==11091==    by 0x400861E: _dl_dst_substitute (dl-load.c:288)
+==11091==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
+==11091==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:673)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:654)
+==11091==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==11091==    by 0x400DDC0: openaux (dl-deps.c:64)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==11091==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x40138F9: _dl_open (dl-open.c:837)
+==11091==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
+==11091==    at 0x483877F: malloc (vg_replace_malloc.c:307)
+==11091==    by 0x401C26A: strdup (strdup.c:42)
+==11091==    by 0x4008B74: decompose_rpath (dl-load.c:606)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:673)
+==11091==    by 0x4009745: cache_rpath (dl-load.c:654)
+==11091==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==11091==    by 0x400DDC0: openaux (dl-deps.c:64)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==11091==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091==    by 0x40138F9: _dl_open (dl-open.c:837)
+==11091==    by 0x4A46257: dlopen_doit (dlopen.c:66)
+==11091==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==11091== 
+==11091== 
+==11091== HEAP SUMMARY:
+==11091==     in use at exit: 220,764 bytes in 3,045 blocks
+==11091==   total heap usage: 86,395 allocs, 83,350 frees, 37,515,926 bytes allocated
+==11091== 
+==11091== LEAK SUMMARY:
+==11091==    definitely lost: 0 bytes in 0 blocks
+==11091==    indirectly lost: 0 bytes in 0 blocks
+==11091==      possibly lost: 304 bytes in 2 blocks
+==11091==    still reachable: 220,460 bytes in 3,043 blocks
+==11091==         suppressed: 0 bytes in 0 blocks
+==11091== Rerun with --leak-check=full to see details of leaked memory
+==11091== 
+==11091== For lists of detected and suppressed errors, rerun with: -s
+==11091== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
