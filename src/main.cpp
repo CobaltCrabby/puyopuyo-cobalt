@@ -122,7 +122,7 @@ class Puyo {
     enum color color;
 
     float vertices[36] = {
-        //vertex           texture
+        //vertex           texture      rgba color
         1.0f, 1.0f, 0.0f,  1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f, //top right
         1.0f, -1.0f, 0.0f,  1.0f, 1.0f,  0.0f, 0.0f, 0.0f, 1.0f, //bottom right
         -1.0f, -1.0f, 0.0f,  0.0f, 1.0f,  0.0f, 0.0f, 0.0f, 1.0f, //bottom left
@@ -336,16 +336,17 @@ const int dropSpeedLUT[12] {
     10,
     15,
     19,
-    21,
+    22,
     24,
     26,
     28,
     30,
-    32, //temp
+    32,
     34,
     36,
     38
 };
+//could be thirteen if you have add puyos above the board
 
 class Grid {
     int xSize, ySize;
