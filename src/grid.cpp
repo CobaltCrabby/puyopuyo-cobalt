@@ -304,14 +304,27 @@ class Grid {
             int y = currPuyo[1]->getY();
             int tx = x_ + x;
             int ty = y_ + y;
+            int offset = 0;
 
-            if (tx < 0 || tx >= xSize || ty < 0 || ty >= ySize || puyoGrid[tx][ty] != nullptr) {
+            if (ty < 0 || ty >= ySize) return;
+
+            if (tx < 0) {
+                offset = 1;
+            } else if (tx >= xSize) {
+                offset = -1;
+            } else if (puyoGrid[tx][ty] != nullptr) {
                 return;
             }
 
-            currPuyo[1]->move(x_, y_);
+            int zx = currPuyo[0]->getX();
+            int zy = currPuyo[0]->getY();
+
+            currPuyo[0]->move(offset, 0);
+            puyoGrid[zx][zy] = nullptr;
+            puyoGrid[zx + offset][zy] = currPuyo[0];
+            currPuyo[1]->move(x_ + offset, y_);
             puyoGrid[x][y] = nullptr;
-            puyoGrid[tx][ty] = currPuyo[1];
+            puyoGrid[tx + offset][ty] = currPuyo[1];
             currPuyoRotation += direction;
         }
 

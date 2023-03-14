@@ -7,7 +7,6 @@
 #include <cmath>
 #include <vector>
 #include <tuple>
-#include <cmath>
 
 using namespace std;
 static void error_callback(int error, const char* description) {
@@ -18,7 +17,6 @@ int gridX = 6;
 int gridY = 12;
 Grid* grid;
 int frameCount;
-
 
 void keyCallback(GLFWwindow* window);
 
