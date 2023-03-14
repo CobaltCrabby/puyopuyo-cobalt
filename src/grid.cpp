@@ -319,6 +319,8 @@ class Grid {
             int zx = currPuyo[0]->getX();
             int zy = currPuyo[0]->getY();
 
+            //hi
+
             currPuyo[0]->move(offset, 0);
             puyoGrid[zx][zy] = nullptr;
             puyoGrid[zx + offset][zy] = currPuyo[0];
