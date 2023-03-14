@@ -360,7 +360,7 @@ class Grid {
     
     int currPuyoRotation = 1;
 
-    tuple<int, int> prevDrop = make_tuple(-1, -1);
+    vector<tuple<int, int>> prevDrop;
     vector<tuple<int, int>> matched;
 
     public:
@@ -416,6 +416,8 @@ class Grid {
         }
 
         bool move(int xInc, int yInc) {
+            if (timerRunning()) return false;
+            
             int px[2];
             int py[2];
             int nx[2];
@@ -445,14 +447,29 @@ class Grid {
                 puyoGrid[nx[i]][ny[i]] = currPuyo[i];
             }
 
-            popPuyo(nx[0], ny[0]);
+            for (int i = 0; i < 2; i++) {
+                if (ny[i] == 0 || puyoGrid[nx[i]][ny[i] - 1] != nullptr && puyoGrid[nx[i]][ny[i] - 1] != currPuyo[(i + 1) % 2]) {
+                    startDropTimer();
+                    break;
+                }
+            }
 
             return true;
         }
 
-        void popPuyo(int _x, int _y) {
-            vector<tuple<int, int>> match; 
-            match = checkPops(_x, _y, matched, puyoGrid[_x][_y]->getColor());
+        bool popPuyo(vector<tuple<int, int>> pops) {
+            vector<tuple<int, int>> match;
+            for (int i = 0; i < pops.size(); i++) {
+                int _x = get<0>(pops.at(i));
+                int _y = get<1>(pops.at(i));
+                vector<tuple<int, int>> temp; 
+                temp = checkPops(_x, _y, temp, puyoGrid[_x][_y]->getColor());
+
+                //concatenate vectors
+                if (temp.size() >= 4) {
+                    match.insert(match.end(), temp.begin(), temp.end());
+                }
+            }
 
             for (int i = 0; i < xSize; i++) {
                 for (int j = 0; j < ySize; j++) {
@@ -463,11 +480,11 @@ class Grid {
             }
 
             if (match.size() >= 4) {
-                //currPuyo[0] = nullptr;
-                //currPuyo[1] = nullptr;
                 startBouncingTimer();
                 matched = match;
+                return true;
             }
+            return false;
         }
 
         vector<tuple<int, int>> checkPops(int x, int y, vector<tuple<int, int>> num, enum color c) {
@@ -533,18 +550,45 @@ class Grid {
 
         void dropTimer() {
             if (dropNum == -1) return;
-            bool didGrav;
 
             if (dropNum == dropSpeedLUT[dropIndex]) {
-                tuple<int, int> pop = applyGravity();
-                if (get<0>(pop) != -1) {
+                vector<tuple<int, int>> dropped = applyGravity();
+                if (dropped.size() != 0) {
                     dropIndex++;
-                    prevDrop = pop;
-                } else if (get<0>(prevDrop) != -1) {
+                    updatePrevDrop(dropped);
+                } else if (prevDrop.size() != 0) {
                     dropNum = -1;
                     dropIndex = 0;
-                    popPuyo(get<0>(prevDrop), get<1>(prevDrop));
-                    prevDrop = make_tuple(-1, -1);
+
+                    bool pop = popPuyo(prevDrop);
+
+                    prevDrop.clear();
+
+                    if (!pop) newCurrPuyo();
+
+                    return;
+                } else if (prevDrop.size() == 0 && dropped.size() == 0) {
+                    if (currPuyo[0] == nullptr) {
+                        newCurrPuyo();
+                    } else {
+                        bool pop = false;
+                        vector<tuple<int, int>> pops{
+                            make_tuple(currPuyo[0]->getX(), currPuyo[0]->getY()),
+                            make_tuple(currPuyo[1]->getX(), currPuyo[1]->getY())
+                        };
+                        pop = popPuyo(pops);
+                        currPuyo[0] = nullptr;
+                        currPuyo[1] = nullptr;
+
+                        if (!pop) {
+                            newCurrPuyo();
+                        }
+                    }
+
+                    dropNum = -1;
+                    dropIndex = 0;
+                    prevDrop.clear();
+                    return;
                 }
             }
             dropNum++;
@@ -562,23 +606,21 @@ class Grid {
             return bouncingNum != -1 || dropNum != -1;
         }
 
-        tuple<int, int> applyGravity() {
-            int x = -1;
-            int y = -1;
-
+        vector<tuple<int, int>> applyGravity() {
+            vector<tuple<int, int>> dropping;
+            
             for (int i = 0; i < xSize; i++) {
                 for (int j = 1; j < ySize; j++) {
                     if (puyoGrid[i][j] != nullptr && puyoGrid[i][j - 1] == nullptr) {
                         puyoGrid[i][j]->move(0, -1);
                         puyoGrid[i][j - 1] = puyoGrid[i][j];
                         puyoGrid[i][j] = nullptr;
-                        x = i;
-                        y = j - 1;
+                        dropping.push_back(make_tuple(i, j - 1));
                     }
                 }
             }
 
-            return make_tuple(x, y);
+            return dropping;
         }
 
         void rotatePuyo(int direction) {
@@ -599,6 +641,36 @@ class Grid {
             puyoGrid[x][y] = nullptr;
             puyoGrid[tx][ty] = currPuyo[1];
             currPuyoRotation += direction;
+        }
+
+        void newCurrPuyo() {
+            srand((unsigned) time(NULL));
+            setCurrPuyo(
+                addPuyo(2, 10, static_cast<color>((int) random() % 4)), 
+                addPuyo(2, 11, static_cast<color>((int) random() % 4))
+            );
+            currPuyoRotation = 1;
+        }
+
+        void updatePrevDrop(vector<tuple<int, int>> drop) {
+            for (int i = 0; i < drop.size(); i++) {
+                bool repeat = false;
+                int _x = get<0>(drop.at(i));
+                int _y = get<1>(drop.at(i));
+
+                for (int j = 0; j < prevDrop.size(); j++) {
+                    int __x = get<0>(prevDrop.at(j));
+                    int __y = get<1>(prevDrop.at(j));
+                    if (_x == __x && _y + 1 == __y) {
+                        repeat = true;
+                        prevDrop.at(j) = drop.at(i);
+                    }
+                }
+
+                if (!repeat) {
+                    prevDrop.push_back(drop.at(i));
+                }
+            }
         }
 };
 
@@ -649,6 +721,7 @@ int main(void) {
     grid->addPuyo(1, 0, red);
     grid->addPuyo(1, 1, green);
     grid->addPuyo(1, 2, red);
+    grid->addPuyo(1, 3, red);
     grid->addPuyo(2, 0, blue);
     grid->addPuyo(2, 1, red);
     grid->addPuyo(2, 2, blue);
