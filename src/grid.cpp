@@ -315,7 +315,7 @@ class Grid {
                 offset = 1;
             } else if (tx >= xSize) {
                 offset = -1;
-            } else if (puyoGrid[tx][ty] != nullptr || puyoGrid[zx + (int) x_][zy + (int) y_] != nullptr) {
+            } else if (puyoGrid[tx][ty] != nullptr) {
                 return;
             }
 
