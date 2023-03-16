@@ -122,11 +122,14 @@ int main(void) {
 int dasFrame = 0;
 bool dasActive = false;
 bool dasCharge = false;
+int prevA;
+int prevS;
+int lastA = 0;
+int lastS = 0;
 int prevLeft;
 int prevRight;
 int prevDown;
-int prevA;
-int prevS;
+
 
 void horizontalInput(int input, int prev, int x) {
     bool moved = true;
@@ -170,11 +173,25 @@ void keyCallback(GLFWwindow* window) {
     int s = glfwGetKey(window, GLFW_KEY_S);
 
     if (a && !prevA) {
-        grid->rotatePuyo(1);
+        if (lastA <= 10 && grid->canOneColumn()) {
+            grid->oneColumnRotate();
+        } else {
+            grid->rotatePuyo(1);
+        }
+        lastA = 0;
+    } else {
+        lastA++;
     }
 
     if (s && !prevS) {
-        grid->rotatePuyo(-1);
+        if (lastS <= 10 && grid->canOneColumn()) {
+            grid->oneColumnRotate();
+        } else {
+            grid->rotatePuyo(-1);
+        }
+        lastS = 0; 
+    } else {
+        lastS++;
     }
 
     // if (glfwGetKey(window, GLFW_KEY_UP)) {

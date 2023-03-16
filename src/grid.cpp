@@ -319,8 +319,6 @@ class Grid {
             int zx = currPuyo[0]->getX();
             int zy = currPuyo[0]->getY();
 
-            //hi
-
             currPuyo[0]->move(offset, 0);
             puyoGrid[zx][zy] = nullptr;
             puyoGrid[zx + offset][zy] = currPuyo[0];
@@ -358,5 +356,37 @@ class Grid {
                     prevDrop.push_back(drop.at(i));
                 }
             }
+        }
+
+        bool canOneColumn() {
+            if (currPuyoRotation % 2 == 0) return false;
+            bool rotate = true;
+
+            for (int i = 0; i < 2; i++) {
+                int x = currPuyo[i]->getX();
+                int y = currPuyo[i]->getY();
+
+                if (x <= 0 || x >= xSize - 1) return false;
+                rotate = rotate && puyoGrid[x - 1][y] != nullptr && puyoGrid[x + 1][y] != nullptr;
+            }
+            return rotate;
+        }
+
+        void oneColumnRotate() {
+            int x1 = currPuyo[0]->getX();
+            int y1 = currPuyo[0]->getY();
+            int x2 = currPuyo[1]->getX();
+            int y2 = currPuyo[1]->getY();
+
+            if (y1 > y2) {
+                currPuyo[0]->move(0, -1);
+                currPuyo[1]->move(0, 1);
+            } else {
+                currPuyo[0]->move(0, 1);
+                currPuyo[1]->move(0, -1);
+            }
+
+            puyoGrid[x1][y1] = currPuyo[1];
+            puyoGrid[x2][y2] = currPuyo[0];
         }
 };
