@@ -130,7 +130,6 @@ int prevLeft;
 int prevRight;
 int prevDown;
 
-
 void horizontalInput(int input, int prev, int x) {
     bool moved = true;
     if (input) {
