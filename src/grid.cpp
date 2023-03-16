@@ -59,6 +59,18 @@ class Grid {
             }
         }
 
+        ~Grid() {
+            for (int i = 0; i < xSize + ySize + 2; i++) {
+                delete gridLines[i];
+            }
+
+            for (int i = 0; i < xSize; i++) {
+                for (int j = 0; j < ySize; j++) {
+                    delete puyoGrid[i][j];
+                }
+            }
+        }
+
         void draw() {
             for (int i = 0; i < xSize; i++) {
                 for (int j = 0; j < ySize; j++) {

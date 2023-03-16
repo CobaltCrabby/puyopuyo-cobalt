@@ -126,6 +126,7 @@ int prevA;
 int prevS;
 int lastA = 0;
 int lastS = 0;
+int prevRestart;
 int prevLeft;
 int prevRight;
 int prevDown;
@@ -167,9 +168,17 @@ void keyCallback(GLFWwindow* window) {
     int left = glfwGetKey(window, GLFW_KEY_LEFT);
     int right = glfwGetKey(window, GLFW_KEY_RIGHT);
     int down = glfwGetKey(window, GLFW_KEY_DOWN);
+    
+    int restart = glfwGetKey(window, GLFW_KEY_R);
 
     int a = glfwGetKey(window, GLFW_KEY_A);
     int s = glfwGetKey(window, GLFW_KEY_S);
+
+    if (restart && !prevRestart) {
+        delete grid;
+        grid = new Grid(gridX, gridY);
+        grid->newCurrPuyo();
+    }
 
     if (a && !prevA) {
         if (lastA <= 10 && grid->canOneColumn()) {
@@ -222,4 +231,5 @@ void keyCallback(GLFWwindow* window) {
     prevDown = down;
     prevA = a;
     prevS = s;
+    prevRestart = restart;
 }

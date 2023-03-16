@@ -95,6 +95,13 @@ class Puyo {
             drawInit();           
         }
 
+        ~Puyo() {
+            glDeleteVertexArrays(1, &VAO);
+            glDeleteBuffers(1, &VBO);
+            glDeleteBuffers(1, &EBO);
+            glDeleteProgram(shaderProgram);
+        }
+
         void drawInit() {
             //setting the grid positions
             vertices[0] = (-g_x / 20.0f) + 0.1f * x + 0.1f;
@@ -240,12 +247,5 @@ class Puyo {
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_DYNAMIC_DRAW);
-        }
-
-        ~Puyo() {
-            glDeleteVertexArrays(1, &VAO);
-            glDeleteBuffers(1, &VBO);
-            glDeleteBuffers(1, &EBO);
-            glDeleteProgram(shaderProgram);
         }
 };
