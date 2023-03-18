@@ -182,7 +182,7 @@ void keyCallback(GLFWwindow* window) {
 
     if (a && !prevA) {
         if (lastA <= 10 && grid->canOneColumn()) {
-            grid->oneColumnRotate();
+            grid->rotatePuyo(2);
         } else {
             grid->rotatePuyo(1);
         }
@@ -193,7 +193,7 @@ void keyCallback(GLFWwindow* window) {
 
     if (s && !prevS) {
         if (lastS <= 10 && grid->canOneColumn()) {
-            grid->oneColumnRotate();
+            grid->rotatePuyo(2);
         } else {
             grid->rotatePuyo(-1);
         }

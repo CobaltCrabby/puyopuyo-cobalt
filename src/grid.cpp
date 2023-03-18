@@ -387,22 +387,4 @@ class Grid {
             }
             return rotate;
         }
-
-        void oneColumnRotate() {
-            int x1 = currPuyo[0]->getX();
-            int y1 = currPuyo[0]->getY();
-            int x2 = currPuyo[1]->getX();
-            int y2 = currPuyo[1]->getY();
-
-            if (y1 > y2) {
-                currPuyo[0]->move(0, -1);
-                currPuyo[1]->move(0, 1);
-            } else {
-                currPuyo[0]->move(0, 1);
-                currPuyo[1]->move(0, -1);
-            }
-
-            puyoGrid[x1][y1] = currPuyo[1];
-            puyoGrid[x2][y2] = currPuyo[0];
-        }
 };
