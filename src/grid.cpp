@@ -132,7 +132,7 @@ class Grid {
             }
 
             for (int i = 0; i < 2; i++) {
-                if (ny[i] == 0 || puyoGrid[nx[i]][ny[i] - 1] != nullptr && puyoGrid[nx[i]][ny[i] - 1] != currPuyo[(i + 1) % 2]) {
+                if (yInc == -1 && ny[i] == 0 || puyoGrid[nx[i]][ny[i] - 1] != nullptr && puyoGrid[nx[i]][ny[i] - 1] != currPuyo[(i + 1) % 2]) {
                     startDropTimer();
                     break;
                 }
@@ -243,6 +243,11 @@ class Grid {
                 } else if (prevDrop.size() != 0) {
                     dropNum = -1;
                     dropIndex = 0;
+
+                    if (currPuyo[0] != nullptr) {
+                        prevDrop.push_back(make_tuple(currPuyo[0]->getX(), currPuyo[0]->getY()));
+                        prevDrop.push_back(make_tuple(currPuyo[1]->getX(), currPuyo[1]->getY()));
+                    }
 
                     bool pop = popPuyo(prevDrop);
 
