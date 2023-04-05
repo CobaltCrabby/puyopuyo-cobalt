@@ -7,4 +7,4 @@ main.o: main.cpp grid.cpp line.cpp puyo.cpp
 	g++ -c -g main.cpp
 
 run: main.exec
-	valgrind --log-file=cobalt.rpt ./main.exec
+	valgrind --log-file=cobalt.rpt --track-origins=yes ./main.exec

@@ -115,6 +115,12 @@ class Grid {
             }
 
             for (int i = 0; i < 2; i++) {
+                if ((nx[i] < 0 || nx[i] >= xSize || ny[i] < 0 || ny[i] >= ySize || 
+                   (puyoGrid[nx[i]][ny[i]] != currPuyo[(i + 1) % 2] && puyoGrid[nx[i]][ny[i]] != nullptr)) && yInc == -1) {
+                    startDropTimer();
+                    return true;
+                }
+
                 if (nx[i] < 0 || nx[i] >= xSize || ny[i] < 0 || ny[i] >= ySize || 
                    (puyoGrid[nx[i]][ny[i]] != currPuyo[(i + 1) % 2] && puyoGrid[nx[i]][ny[i]] != nullptr)) {
                     return false;
@@ -132,7 +138,7 @@ class Grid {
             }
 
             for (int i = 0; i < 2; i++) {
-                if (yInc == -1 && ny[i] == 0 || puyoGrid[nx[i]][ny[i] - 1] != nullptr && puyoGrid[nx[i]][ny[i] - 1] != currPuyo[(i + 1) % 2]) {
+                if (yInc == -1 && (ny[i] == 0 || puyoGrid[nx[i]][ny[i] - 1] != nullptr && puyoGrid[nx[i]][ny[i] - 1] != currPuyo[(i + 1) % 2])) {
                     startDropTimer();
                     break;
                 }
