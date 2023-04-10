@@ -116,14 +116,13 @@ class Grid {
 
             for (int i = 0; i < 2; i++) {
                 if ((nx[i] < 0 || nx[i] >= xSize || ny[i] < 0 || ny[i] >= ySize || 
-                   (puyoGrid[nx[i]][ny[i]] != currPuyo[(i + 1) % 2] && puyoGrid[nx[i]][ny[i]] != nullptr)) && yInc == -1) {
-                    startDropTimer();
-                    return true;
-                }
-
-                if (nx[i] < 0 || nx[i] >= xSize || ny[i] < 0 || ny[i] >= ySize || 
-                   (puyoGrid[nx[i]][ny[i]] != currPuyo[(i + 1) % 2] && puyoGrid[nx[i]][ny[i]] != nullptr)) {
-                    return false;
+                   (puyoGrid[nx[i]][ny[i]] != currPuyo[(i + 1) % 2] && puyoGrid[nx[i]][ny[i]] != nullptr))) {
+                    if (yInc == -1) {
+                        startDropTimer();
+                        return true;
+                    } else {
+                       return false;    
+                    }
                 }
             }
 
@@ -214,25 +213,27 @@ class Grid {
                 return;
             } 
 
-            if (bouncingNum % 8 == 0) {
+            float transparency = -1.0f;
+
+            switch(bouncingNum % 8) {
+                case 0:
+                    transparency = 1.0f;
+                    break;
+                case 2:
+                    transparency = 0.5f;
+                    break;
+                case 4:
+                    transparency = 0.0f;
+                    break;
+                case 6:
+                    transparency = 0.5f;
+                    break;
+            }
+
+            if (transparency != -1.0f) {
                 for (int i = 0; i < matched.size(); i++) {
                     tuple<int, int> coords = matched.at(i);
-                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(1.0f);
-                }
-            } else if (bouncingNum % 8 == 2) {
-                for (int i = 0; i < matched.size(); i++) {
-                    tuple<int, int> coords = matched.at(i);
-                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(0.5f);
-                }
-            } else if (bouncingNum % 8 == 4) {
-                for (int i = 0; i < matched.size(); i++) {
-                    tuple<int, int> coords = matched.at(i);
-                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(0.0f);
-                }
-            } else if (bouncingNum % 8 == 6) {
-                for (int i = 0; i < matched.size(); i++) {
-                    tuple<int, int> coords = matched.at(i);
-                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(0.5f);
+                    puyoGrid[get<0>(coords)][get<1>(coords)]->setTransparency(transparency);
                 }
             }
             bouncingNum++;
