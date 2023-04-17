@@ -4,6 +4,7 @@
         "type_traits": "cpp",
         "cmath": "cpp",
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "tuple": "cpp"
     }
 }

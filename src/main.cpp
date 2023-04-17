@@ -1,7 +1,7 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
 
-#include "grid.cpp"
+#include "grid.h"
 
 #include <iostream>
 #include <cmath>
@@ -25,6 +25,11 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
             (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ), type, severity, message );
 }
 
+//this just doesn't work ??
+void resize(GLFWwindow* window, int width, int height) {
+    glfwSetWindowAspectRatio(window, 1, 1);
+}
+
 int main(void) {
     GLFWwindow* window;
 
@@ -39,6 +44,7 @@ int main(void) {
 
     window = glfwCreateWindow(640, 640, "icon", NULL, NULL);
     glfwSetWindowTitle(window, "ぷよぷよcobalt");
+    glfwSetWindowAspectRatio(window, 1, 1);
 
     if (!window) {
         glfwTerminate();
@@ -47,7 +53,7 @@ int main(void) {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
-    double theta = 0;
+    glfwSetWindowSizeCallback(window, resize);
 
     grid = new Grid(gridX, gridY);
 
