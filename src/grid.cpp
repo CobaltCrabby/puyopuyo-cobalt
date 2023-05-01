@@ -41,6 +41,8 @@ Grid::Grid (int x, int y) {
     for (int i = 0; i < y + 1; i++) {
         gridLines[x + 1 + i] = new Line((-x / 20.0f), (-y / 20.0f) + 0.1f * i, (x / 20.0f), (-y / 20.0f) + 0.1f * i);
     }
+
+    queue->initQueue();
 }
 
 Grid::~Grid() {
@@ -67,6 +69,8 @@ void Grid::draw() {
     for (int i = 0; i < xSize + ySize + 2; i++) {
         gridLines[i]->draw();
     }
+
+    queue->draw();
 }
 
 void Grid::setCurrPuyo(Puyo* puyo1, Puyo* puyo2) {

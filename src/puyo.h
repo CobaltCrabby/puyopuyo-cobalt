@@ -1,3 +1,4 @@
+#pragma once
 #define GL_GLEXT_PROTOTYPES
 #include <GLFW/glfw3.h>
 
@@ -36,6 +37,7 @@ class Puyo {
         ~Puyo();
 
         void drawInit();
+        void drawInit(float x, float y, float size);
 
         void draw();
 

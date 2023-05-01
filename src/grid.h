@@ -1,5 +1,8 @@
+#pragma once
+
 #include "line.h"
 #include "puyo.h"
+#include "queue.h"
 #include <vector>
 #include <tuple>
 
@@ -8,6 +11,7 @@ class Grid {
     Line** gridLines;
     Puyo*** puyoGrid;
     Puyo* currPuyo[2];
+    Queue* queue;
 
     int bouncingNum = -1;
     int dropNum = -1;
