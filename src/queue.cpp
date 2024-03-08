@@ -12,8 +12,8 @@ void Queue::initQueue() {
             array[j] = new Puyo(0, 0, static_cast<color>((int) random() % 4), 0, 0);
             array[j]->drawInit(0.7f, 0.8f - 0.12f * j - 0.2f * (i - 1), 0.12f);
         }
-        //seg fault here lol!!!!!
-        q.push(array);
+        //seg fault here lol!!!!! array pointer jank with queue?? idk
+        //q.push(array);
     }
 }
 
@@ -32,5 +32,3 @@ void Queue::draw() {
         last[i]->draw();
     }
 }
-
-//need to fix makefile and make all header files

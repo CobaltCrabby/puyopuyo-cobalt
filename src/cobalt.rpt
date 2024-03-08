@@ -1,117 +1,83 @@
-==2144== Memcheck, a memory error detector
-==2144== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
-==2144== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
-==2144== Command: ./main.exec
-==2144== Parent PID: 2143
-==2144== 
-==2144== Invalid read of size 8
-==2144==    at 0x401D704: strncmp (strcmp.S:175)
-==2144==    by 0x400604D: is_dst (dl-load.c:209)
-==2144==    by 0x4008566: _dl_dst_count (dl-load.c:246)
-==2144==    by 0x4008757: expand_dynamic_string_token (dl-load.c:388)
-==2144==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
-==2144==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:673)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:654)
-==2144==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==2144==    by 0x400DDC0: openaux (dl-deps.c:64)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==2144==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
-==2144==    at 0x483877F: malloc (vg_replace_malloc.c:307)
-==2144==    by 0x401C26A: strdup (strdup.c:42)
-==2144==    by 0x4008B74: decompose_rpath (dl-load.c:606)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:673)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:654)
-==2144==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==2144==    by 0x400DDC0: openaux (dl-deps.c:64)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==2144==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x40138F9: _dl_open (dl-open.c:837)
-==2144==    by 0x4A46257: dlopen_doit (dlopen.c:66)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144== 
-==2144== Invalid read of size 8
-==2144==    at 0x401D704: strncmp (strcmp.S:175)
-==2144==    by 0x400604D: is_dst (dl-load.c:209)
-==2144==    by 0x400861E: _dl_dst_substitute (dl-load.c:288)
-==2144==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
-==2144==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:673)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:654)
-==2144==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==2144==    by 0x400DDC0: openaux (dl-deps.c:64)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==2144==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x40138F9: _dl_open (dl-open.c:837)
-==2144==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
-==2144==    at 0x483877F: malloc (vg_replace_malloc.c:307)
-==2144==    by 0x401C26A: strdup (strdup.c:42)
-==2144==    by 0x4008B74: decompose_rpath (dl-load.c:606)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:673)
-==2144==    by 0x4009745: cache_rpath (dl-load.c:654)
-==2144==    by 0x4009745: _dl_map_object (dl-load.c:2074)
-==2144==    by 0x400DDC0: openaux (dl-deps.c:64)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
-==2144==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144==    by 0x40138F9: _dl_open (dl-open.c:837)
-==2144==    by 0x4A46257: dlopen_doit (dlopen.c:66)
-==2144==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
-==2144== 
-==2144== Use of uninitialised value of size 8
-==2144==    at 0x132784: void std::deque<Puyo**, std::allocator<Puyo**> >::emplace_back<Puyo**>(Puyo**&&) (deque.tcc:167)
-==2144==    by 0x132695: std::deque<Puyo**, std::allocator<Puyo**> >::push_back(Puyo**&&) (stl_deque.h:1509)
-==2144==    by 0x132601: std::queue<Puyo**, std::deque<Puyo**, std::allocator<Puyo**> > >::push(Puyo**&&) (stl_queue.h:271)
-==2144==    by 0x132467: Queue::initQueue() (queue.cpp:15)
-==2144==    by 0x1112E3: Grid::Grid(int, int) (grid.cpp:45)
-==2144==    by 0x117133: main (main.cpp:58)
-==2144==  Uninitialised value was created by a heap allocation
-==2144==    at 0x4838DEF: operator new(unsigned long) (vg_replace_malloc.c:342)
-==2144==    by 0x11711A: main (main.cpp:58)
-==2144== 
-==2144== Invalid read of size 8
-==2144==    at 0x132784: void std::deque<Puyo**, std::allocator<Puyo**> >::emplace_back<Puyo**>(Puyo**&&) (deque.tcc:167)
-==2144==    by 0x132695: std::deque<Puyo**, std::allocator<Puyo**> >::push_back(Puyo**&&) (stl_deque.h:1509)
-==2144==    by 0x132601: std::queue<Puyo**, std::deque<Puyo**, std::allocator<Puyo**> > >::push(Puyo**&&) (stl_queue.h:271)
-==2144==    by 0x132467: Queue::initQueue() (queue.cpp:15)
-==2144==    by 0x1112E3: Grid::Grid(int, int) (grid.cpp:45)
-==2144==    by 0x117133: main (main.cpp:58)
-==2144==  Address 0x30 is not stack'd, malloc'd or (recently) free'd
-==2144== 
-==2144== 
-==2144== Process terminating with default action of signal 11 (SIGSEGV)
-==2144==  Access not within mapped region at address 0x30
-==2144==    at 0x132784: void std::deque<Puyo**, std::allocator<Puyo**> >::emplace_back<Puyo**>(Puyo**&&) (deque.tcc:167)
-==2144==    by 0x132695: std::deque<Puyo**, std::allocator<Puyo**> >::push_back(Puyo**&&) (stl_deque.h:1509)
-==2144==    by 0x132601: std::queue<Puyo**, std::deque<Puyo**, std::allocator<Puyo**> > >::push(Puyo**&&) (stl_queue.h:271)
-==2144==    by 0x132467: Queue::initQueue() (queue.cpp:15)
-==2144==    by 0x1112E3: Grid::Grid(int, int) (grid.cpp:45)
-==2144==    by 0x117133: main (main.cpp:58)
-==2144==  If you believe this happened as a result of a stack
-==2144==  overflow in your program's main thread (unlikely but
-==2144==  possible), you can try to increase the size of the
-==2144==  main thread stack using the --main-stacksize= flag.
-==2144==  The main thread stack size used in this run was 8388608.
-==2144== 
-==2144== HEAP SUMMARY:
-==2144==     in use at exit: 7,984,808 bytes in 46,278 blocks
-==2144==   total heap usage: 64,498 allocs, 18,220 frees, 22,024,466 bytes allocated
-==2144== 
-==2144== LEAK SUMMARY:
-==2144==    definitely lost: 0 bytes in 0 blocks
-==2144==    indirectly lost: 0 bytes in 0 blocks
-==2144==      possibly lost: 5,545,002 bytes in 38,504 blocks
-==2144==    still reachable: 2,439,806 bytes in 7,774 blocks
-==2144==         suppressed: 0 bytes in 0 blocks
-==2144== Rerun with --leak-check=full to see details of leaked memory
-==2144== 
-==2144== For lists of detected and suppressed errors, rerun with: -s
-==2144== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+==13170== Memcheck, a memory error detector
+==13170== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==13170== Using Valgrind-3.16.1 and LibVEX; rerun with -h for copyright info
+==13170== Command: ./main.exec
+==13170== Parent PID: 13142
+==13170== 
+==13170== Invalid read of size 8
+==13170==    at 0x401D704: strncmp (strcmp.S:175)
+==13170==    by 0x400604D: is_dst (dl-load.c:209)
+==13170==    by 0x4008566: _dl_dst_count (dl-load.c:246)
+==13170==    by 0x4008757: expand_dynamic_string_token (dl-load.c:388)
+==13170==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
+==13170==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:673)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:654)
+==13170==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==13170==    by 0x400DDC0: openaux (dl-deps.c:64)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==13170==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
+==13170==    at 0x483877F: malloc (vg_replace_malloc.c:307)
+==13170==    by 0x401C26A: strdup (strdup.c:42)
+==13170==    by 0x4008B74: decompose_rpath (dl-load.c:606)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:673)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:654)
+==13170==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==13170==    by 0x400DDC0: openaux (dl-deps.c:64)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==13170==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x40138F9: _dl_open (dl-open.c:837)
+==13170==    by 0x4A46257: dlopen_doit (dlopen.c:66)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170== 
+==13170== Invalid read of size 8
+==13170==    at 0x401D704: strncmp (strcmp.S:175)
+==13170==    by 0x400604D: is_dst (dl-load.c:209)
+==13170==    by 0x400861E: _dl_dst_substitute (dl-load.c:288)
+==13170==    by 0x40088D1: fillin_rpath.isra.0 (dl-load.c:460)
+==13170==    by 0x4008BE1: decompose_rpath (dl-load.c:631)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:673)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:654)
+==13170==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==13170==    by 0x400DDC0: openaux (dl-deps.c:64)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==13170==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x40138F9: _dl_open (dl-open.c:837)
+==13170==  Address 0x63e5409 is 9 bytes inside a block of size 15 alloc'd
+==13170==    at 0x483877F: malloc (vg_replace_malloc.c:307)
+==13170==    by 0x401C26A: strdup (strdup.c:42)
+==13170==    by 0x4008B74: decompose_rpath (dl-load.c:606)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:673)
+==13170==    by 0x4009745: cache_rpath (dl-load.c:654)
+==13170==    by 0x4009745: _dl_map_object (dl-load.c:2074)
+==13170==    by 0x400DDC0: openaux (dl-deps.c:64)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x400E138: _dl_map_object_deps (dl-deps.c:248)
+==13170==    by 0x4013DAA: dl_open_worker (dl-open.c:571)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170==    by 0x40138F9: _dl_open (dl-open.c:837)
+==13170==    by 0x4A46257: dlopen_doit (dlopen.c:66)
+==13170==    by 0x4EAEA8F: _dl_catch_exception (dl-error-skeleton.c:208)
+==13170== 
+==13170== 
+==13170== HEAP SUMMARY:
+==13170==     in use at exit: 232,468 bytes in 3,098 blocks
+==13170==   total heap usage: 129,936 allocs, 126,838 frees, 88,576,548 bytes allocated
+==13170== 
+==13170== LEAK SUMMARY:
+==13170==    definitely lost: 896 bytes in 4 blocks
+==13170==    indirectly lost: 0 bytes in 0 blocks
+==13170==      possibly lost: 304 bytes in 2 blocks
+==13170==    still reachable: 231,268 bytes in 3,092 blocks
+==13170==         suppressed: 0 bytes in 0 blocks
+==13170== Rerun with --leak-check=full to see details of leaked memory
+==13170== 
+==13170== For lists of detected and suppressed errors, rerun with: -s
+==13170== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)

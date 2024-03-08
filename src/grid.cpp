@@ -70,7 +70,7 @@ void Grid::draw() {
         gridLines[i]->draw();
     }
 
-    queue->draw();
+    //queue->draw();
 }
 
 void Grid::setCurrPuyo(Puyo* puyo1, Puyo* puyo2) {
