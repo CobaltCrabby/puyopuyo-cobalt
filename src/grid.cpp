@@ -26,6 +26,9 @@ Grid::Grid (int x, int y) {
 
     puyoGrid = new Puyo**[x];
     gridLines = new Line*[x + y + 2];
+    queue = new Queue();
+
+    queue->initQueue();
 
     for (int i = 0; i < x; i++) {
         puyoGrid[i] = new Puyo*[y];
@@ -41,8 +44,6 @@ Grid::Grid (int x, int y) {
     for (int i = 0; i < y + 1; i++) {
         gridLines[x + 1 + i] = new Line((-x / 20.0f), (-y / 20.0f) + 0.1f * i, (x / 20.0f), (-y / 20.0f) + 0.1f * i);
     }
-
-    queue->initQueue();
 }
 
 Grid::~Grid() {
@@ -70,7 +71,7 @@ void Grid::draw() {
         gridLines[i]->draw();
     }
 
-    //queue->draw();
+    queue->draw();
 }
 
 void Grid::setCurrPuyo(Puyo* puyo1, Puyo* puyo2) {
@@ -198,6 +199,8 @@ void Grid::bouncingTimer() {
         bouncingNum = -1;
         matched.clear();
         startDropTimer();
+        chain++;
+        cout << chain << endl;
         return;
     } 
 
@@ -347,10 +350,12 @@ void Grid::rotatePuyo(int direction) {
 
 void Grid::newCurrPuyo() {
     srand((unsigned) time(NULL));
+    tuple<UIPuyo*, UIPuyo*> newpair = queue->newPuyo();
     setCurrPuyo(
-        addPuyo(2, 10, static_cast<color>((int) random() % 4)), 
-        addPuyo(2, 11, static_cast<color>((int) random() % 4))
+        addPuyo(2, 10, get<1>(newpair)->getColor()), 
+        addPuyo(2, 11, get<0>(newpair)->getColor())
     );
+    chain = 0;
     currPuyoRotation = 1;
 }
 

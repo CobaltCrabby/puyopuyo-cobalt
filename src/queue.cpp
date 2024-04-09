@@ -1,34 +1,48 @@
-#include <queue>
 #include "queue.h"  
 
 using namespace std;
 
+Queue::Queue() {
+    //cout << "lol!" << endl;
+}
+
 void Queue::initQueue() {
     for (int i = 0; i < 2; i++) {
-        Puyo* array[2];
-        for (int j = 0; j < 2; j++) {
-            srand((unsigned) time(NULL));
-            srand(random());
-            array[j] = new Puyo(0, 0, static_cast<color>((int) random() % 4), 0, 0);
-            array[j]->drawInit(0.7f, 0.8f - 0.12f * j - 0.2f * (i - 1), 0.12f);
-        }
-        //seg fault here lol!!!!! array pointer jank with queue?? idk
-        //q.push(array);
+        srand((unsigned) time(NULL) + i);
+        srand(random());
+        UIPuyo* puyo1 = new UIPuyo(0.6f, 0.6f - 0.3f * i, 0.1f, static_cast<color>((int) random() % 4));
+        srand(random());
+        UIPuyo* puyo2 = new UIPuyo(0.6f, 0.5f - 0.3f * i, 0.1f, static_cast<color>((int) random() % 4));
+
+        tuple<UIPuyo*, UIPuyo*> newpair = make_tuple(puyo1, puyo2);
+        qu.push(newpair);
     }
 }
 
-Puyo** Queue::newPuyo(){
-    Puyo** puyo = q.front();
-    q.pop();
-    return puyo;
+tuple<UIPuyo*, UIPuyo*> Queue::newPuyo(){
+    tuple<UIPuyo*, UIPuyo*> back = qu.back();
+    tuple<UIPuyo*, UIPuyo*> pair = qu.front();
+    qu.pop();
+
+    get<0>(back)->move();
+    get<1>(back)->move();
+
+    srand((unsigned) time(NULL));
+    srand(random());
+    UIPuyo* puyo1 = new UIPuyo(0.6f, 0.6f - 0.3f, 0.1f, static_cast<color>((int) random() % 4));
+    srand(random());
+    UIPuyo* puyo2 = new UIPuyo(0.6f, 0.5f - 0.3f, 0.1f, static_cast<color>((int) random() % 4));
+    qu.push(make_tuple(puyo1, puyo2));
+
+    return pair;
 }
 
 void Queue::draw() {
-    Puyo** first = q.front();
-    Puyo** last = q.back();
+    tuple<UIPuyo*, UIPuyo*> first = qu.front();
+    tuple<UIPuyo*, UIPuyo*> last = qu.back();
 
-    for (int i = 0; i < 2; i++) {
-        first[i]->draw();
-        last[i]->draw();
-    }
+    get<0>(first)->draw();
+    get<0>(last)->draw();
+    get<1>(first)->draw();
+    get<1>(last)->draw();
 }

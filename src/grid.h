@@ -2,6 +2,7 @@
 
 #include "line.h"
 #include "puyo.h"
+#include "uipuyo.h"
 #include "queue.h"
 #include <vector>
 #include <tuple>
@@ -18,6 +19,8 @@ class Grid {
     int dropIndex = 0;
     
     int currPuyoRotation = 1;
+
+    int chain = 0;
 
     vector<tuple<int, int>> prevDrop;
     vector<tuple<int, int>> matched;

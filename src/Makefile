@@ -11,6 +11,9 @@ main.o: main.cpp grid.h
 	g++ -c -g $<
 
 run: main.exec
+	./main.exec
+
+valgrind: main.exec
 	valgrind --log-file=cobalt.rpt --track-origins=yes ./main.exec
 
 clean:

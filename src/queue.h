@@ -1,13 +1,15 @@
 #pragma once
-#include "puyo.h"
+#include "uipuyo.h"
 #include "color.h"
+#include <tuple>
 #include <queue>
 
 class Queue {
-    queue<Puyo**> q;
+    queue<tuple<UIPuyo*, UIPuyo*>> qu;
 
     public:
+        Queue();
         void initQueue();
-        Puyo** newPuyo();
+        tuple<UIPuyo*, UIPuyo*> newPuyo();
         void draw();
 };

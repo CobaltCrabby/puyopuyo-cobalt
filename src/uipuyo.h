@@ -10,9 +10,8 @@ using namespace std;
 class UIPuyo {
     GLuint shaderProgram;
     unsigned int VBO, VAO, EBO, texture;
-    int x, y;
+    float gx, gy;
     float r, g, b;
-    int g_x, g_y;
     enum color color;
 
     float vertices[36] = {
@@ -31,11 +30,15 @@ class UIPuyo {
     public:
         UIPuyo();
 
-        UIPuyo(float centerX, float topY, float size, enum color c);
+        UIPuyo(float x, float y, float size, enum color c);
 
         ~UIPuyo();
+
+        void move();
 
         void drawInit(float x, float y, float size);
 
         void draw();
+
+        enum color getColor();
 };
