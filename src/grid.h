@@ -4,6 +4,7 @@
 #include "puyo.h"
 #include "uipuyo.h"
 #include "queue.h"
+#include "number.h"
 #include <vector>
 #include <tuple>
 
@@ -13,6 +14,7 @@ class Grid {
     Puyo*** puyoGrid;
     Puyo* currPuyo[2];
     Queue* queue;
+    Number* chainNum;
 
     int bouncingNum = -1;
     int dropNum = -1;
